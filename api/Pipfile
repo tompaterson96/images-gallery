@@ -5,6 +5,11 @@ name = "pypi"
 
 [packages]
 flask = "*"
+python-dotenv = "*"
+flask-cors = "*"
+black = "*"
+pylint = "*"
+pycodestyle = "*"
 
 [dev-packages]
 
