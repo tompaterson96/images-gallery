@@ -1,6 +1,6 @@
+import os
 from flask import Flask, request
 import requests
-import os
 from dotenv import load_dotenv
 from flask_cors import CORS
 
@@ -18,11 +18,13 @@ CORS(app)
 
 @app.route("/new-image")
 def new_image():
+    """retrieve new image from Unsplash"""
     word = request.args.get("query")
     response = requests.get(
         UNSPLASH_URL,
         headers={"Accept-Version": "v1", "Authorization": f"Client-ID {UNSPLASH_KEY}"},
         params={"query": word},
+        timeout=10,
     )
 
     data = response.json()
@@ -30,4 +32,4 @@ def new_image():
 
 
 if __name__ == "__main__":
-    app.run()
+    app.run(host="0.0.0.0", port=5000)
