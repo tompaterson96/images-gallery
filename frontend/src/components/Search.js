@@ -19,7 +19,7 @@ const Search = ({ word, setWord, handleSubmit }) => {
               <Col>
                 <Button variant="primary" type="submit">
                   Search
-                </Button>{' '}
+                </Button>
               </Col>
             </Form.Row>
           </Form>
