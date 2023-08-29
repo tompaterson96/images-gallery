@@ -1,8 +1,12 @@
 import os
-from flask import Flask, request
 import requests
+from flask import Flask, request, jsonify
 from dotenv import load_dotenv
 from flask_cors import CORS
+from mongo_client import client as mongo_client
+
+gallery = mongo_client.gallery
+images_collection = gallery.images
 
 load_dotenv(dotenv_path="./api/.env.local")
 
@@ -29,6 +33,20 @@ def new_image():
 
     data = response.json()
     return data
+
+
+@app.route("/images")
+def images():
+    """Store and retrieve images from mongo"""
+    if request.method == "GET":
+        image_data = images_collection.find({})
+        return jsonify([img for img in image_data])
+
+    if request.method == "POST":
+        image = request.get_json()
+        image["_id"] = image.get("id")
+        result = images_collection.insert_one(image)
+        return {"inserted_id": result.inserted_id}
 
 
 if __name__ == "__main__":
