@@ -35,7 +35,7 @@ def new_image():
     return data
 
 
-@app.route("/images")
+@app.route("/images", methods=["GET", "POST"])
 def images():
     """Store and retrieve images from mongo"""
     if request.method == "GET":

@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import axios from 'axios';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import Header from './components/Header';
 import Search from './components/Search';
@@ -12,23 +13,52 @@ const App = () => {
   const [word, setWord] = useState('');
   const [images, setImages] = useState([]);
 
-  console.log(images);
+  const getSavedImages = async () => {
+    try {
+      const res = await axios.get(`${API_URL}/images`);
+      console.log(res.data);
+      setImages(res.data || []);
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
-  const handleSearchSubmit = (ev) => {
+  useEffect(() => getSavedImages, []);
+
+  const handleSearchSubmit = async (ev) => {
     ev.preventDefault();
-    fetch(`${API_URL}/new-image?query=${word}`)
-      .then((result) => result.json())
-      .then((data) => {
-        setImages([{ ...data, title: word }, ...images]);
-      })
-      .catch((error) => {
-        console.log(error);
-      });
+
+    try {
+      const res = await axios.get(`${API_URL}/new-image?query=${word}`);
+      setImages([{ ...res.data, title: word }, ...images]);
+    } catch (error) {
+      console.log(error);
+    }
+
     setWord('');
   };
 
   const handleDeleteSubmit = (id) => {
     setImages(images.filter((image) => image.id !== id));
+  };
+
+  const handleSaveSubmit = async (id) => {
+    try {
+      const imageToBeSaved = images.find((image) => image.id === id);
+      imageToBeSaved.saved = true;
+
+      const res = await axios.post(`${API_URL}/images`, imageToBeSaved);
+      console.log(res.data);
+      if (res.data?.inserted_id) {
+        setImages(
+          images.map((image) =>
+            image.id === id ? { ...image, saved: true } : image,
+          ),
+        );
+      }
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   return (
@@ -40,7 +70,11 @@ const App = () => {
           <Row xs={1} md={2} lg={3}>
             {images.map((image, i) => (
               <Col key={i} className="pb-3">
-                <ImageCard image={image} deleteImage={handleDeleteSubmit} />
+                <ImageCard
+                  image={image}
+                  deleteImage={handleDeleteSubmit}
+                  saveImage={handleSaveSubmit}
+                />
               </Col>
             ))}
           </Row>
