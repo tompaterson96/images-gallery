@@ -50,13 +50,17 @@ const App = () => {
 
   const handleDeleteSubmit = async (id) => {
     try {
-      console.log(`${API_URL}/images/${id}`);
-      const res = await axios.delete(`${API_URL}/images/${id}`);
-      console.log(res.data);
-      if (res.data?.deleted_id) {
-        const imageToBeDeleted = images.find((image) => image.id === id);
+      const imageToBeDeleted = images.find((image) => image.id === id);
+      if (!imageToBeDeleted.saved) {
         setImages(images.filter((image) => image.id !== id));
         toast.warn(`Image ${imageToBeDeleted.title.toUpperCase()} deleted`);
+      } else {
+        const res = await axios.delete(`${API_URL}/images/${id}`);
+        console.log(res.data);
+        if (res.data?.deleted_id) {
+          setImages(images.filter((image) => image.id !== id));
+          toast.warn(`Image ${imageToBeDeleted.title.toUpperCase()} deleted`);
+        }
       }
     } catch (error) {
       console.log(error);
