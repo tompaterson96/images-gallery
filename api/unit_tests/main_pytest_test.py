@@ -15,18 +15,15 @@ class MockMongoDeletionResult:
 
 
 @pytest.mark.parametrize("word", ["car", "bus", "train"])
-# @patch("main.unsplash_client")
 def test_new_image_requests_image_using_query_param(word):
     mock_get_new_image = AsyncMock()
     with patch("main.unsplash_client.get_new_image", side_effect=mock_get_new_image):
         return_value = json.loads('{"test": "value"}')
-        # unsplash_client.get_new_image.return_value = return_value
         mock_get_new_image.return_value = return_value
 
         with app.test_client() as client:
             res = client.get(f"/new-image?query={word}")
 
-        # unsplash_client.get_new_image.assert_called_with(word)
         mock_get_new_image.assert_called_with(word)
         assert res.json == return_value
 
