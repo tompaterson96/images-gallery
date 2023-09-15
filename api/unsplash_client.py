@@ -1,13 +1,14 @@
 import os
-import requests
+import aiohttp
 from dotenv import load_dotenv
 
 env_file = "./api/.env.local"
-for root, dirnames, filenames in os.walk(os.getcwd()):
-    for file in filenames:
-        if file == ".env.local":
-            env_file = os.path.join(root, file)
-            break
+if not os.path.exists(env_file):
+    for root, dirnames, filenames in os.walk(os.getcwd()):
+        for file in filenames:
+            if file == ".env.local":
+                env_file = os.path.join(root, file)
+                break
 
 load_dotenv(dotenv_path=env_file)
 
@@ -18,12 +19,16 @@ if not UNSPLASH_KEY:
     raise EnvironmentError("Please provide UNSPLASH_KEY in .env.local file")
 
 
-def get_new_image(word):
-    response = requests.get(
-        UNSPLASH_URL,
-        headers={"Accept-Version": "v1", "Authorization": f"Client-ID {UNSPLASH_KEY}"},
-        params={"query": word},
-        timeout=10,
-    )
-
-    return response.json()
+async def get_new_image(word):
+    async with aiohttp.ClientSession() as session:
+        async with session.get(
+            UNSPLASH_URL,
+            headers={
+                "Accept-Version": "v1",
+                "Authorization": f"Client-ID {UNSPLASH_KEY}",
+            },
+            params={"query": word},
+            timeout=10,
+        ) as response:
+            json = await response.json()
+            return json

@@ -11,10 +11,11 @@ CORS(app)
 
 
 @app.route("/new-image")
-def new_image():
+async def new_image():
     """retrieve new image from Unsplash"""
     word = request.args.get("query")
-    return unsplash_client.get_new_image(word)
+    response = await unsplash_client.get_new_image(word)
+    return response
 
 
 @app.route("/images", methods=["GET", "POST"])

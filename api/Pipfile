@@ -4,7 +4,6 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-flask = "*"
 requests = "*"
 python-dotenv = "*"
 flask-cors = "*"
@@ -12,6 +11,10 @@ black = "*"
 pylint = "*"
 pycodestyle = "*"
 pymongo = "*"
+parameterized = "*"
+aiohttp = "*"
+pytest-asyncio = "*"
+flask = {extras = ["async"], version = "*"}
 
 [dev-packages]
 
