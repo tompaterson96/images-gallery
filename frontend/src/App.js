@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import axios from 'axios';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import Header from './components/Header';
@@ -6,22 +6,43 @@ import Search from './components/Search';
 import ImageCard from './components/ImageCard';
 import Welcome from './components/Welcome';
 import Spinner from './components/Spinner';
+import useToken from './components/useToken';
+import Login from './components/Login';
 import { Container, Row, Col } from 'react-bootstrap';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-const API_URL = process.env.REACT_APP_API_URL || 'http://127.0.0.1:5000';
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
 const App = () => {
+  const { setToken, token, removeToken } = useToken();
+
   const [word, setWord] = useState('');
   const [images, setImages] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const getSavedImages = async () => {
+  const getSavedImages = async (access_token) => {
     try {
-      const res = await axios.get(`${API_URL}/images`);
+      setLoading(true);
+      console.log(token);
+      const config = {
+        headers: { Authorization: `Bearer ${access_token}` },
+      };
+      const res = await axios.get(`${API_URL}/images`, config);
       console.log(res.data);
-      setImages(res.data || []);
+      res.access_token && setToken(res.access_token);
+
+      const all_images = [...res.data, ...images];
+      const all_ids = all_images.map((item) => item.id);
+      const unique_ids = all_ids.filter(
+        (id, index) => all_ids.indexOf(id) === index,
+      );
+      const unique_images = [];
+      unique_ids.forEach((id) =>
+        unique_images.push(all_images.find((image) => image.id === id)),
+      );
+      setImages(unique_images);
+
       toast.success('Downloaded stored images');
     } catch (error) {
       console.log(error);
@@ -30,8 +51,6 @@ const App = () => {
       setLoading(false);
     }
   };
-
-  useEffect(() => getSavedImages, []);
 
   const handleSearchSubmit = async (ev) => {
     ev.preventDefault();
@@ -55,7 +74,10 @@ const App = () => {
         setImages(images.filter((image) => image.id !== id));
         toast.warn(`Image ${imageToBeDeleted.title.toUpperCase()} deleted`);
       } else {
-        const res = await axios.delete(`${API_URL}/images/${id}`);
+        const config = {
+          headers: { Authorization: `Bearer ${token}` },
+        };
+        const res = await axios.delete(`${API_URL}/images/${id}`, config);
         console.log(res.data);
         if (res.data?.deleted_id) {
           setImages(images.filter((image) => image.id !== id));
@@ -73,7 +95,10 @@ const App = () => {
       const imageToBeSaved = images.find((image) => image.id === id);
       imageToBeSaved.saved = true;
 
-      const res = await axios.post(`${API_URL}/images`, imageToBeSaved);
+      const config = {
+        headers: { Authorization: `Bearer ${token}` },
+      };
+      const res = await axios.post(`${API_URL}/images`, imageToBeSaved, config);
       console.log(res.data);
       if (res.data?.inserted_id) {
         setImages(
@@ -91,33 +116,39 @@ const App = () => {
 
   return (
     <div className="App">
-      <Header title="Images Gallery" />
-      {loading ? (
-        <Spinner />
+      <Header title="Images Gallery" token={token} removeToken={removeToken} />
+      {!token && token !== '' && token !== undefined ? (
+        <Login setToken={setToken} getSavedImages={getSavedImages} />
       ) : (
         <>
-          <Search
-            word={word}
-            setWord={setWord}
-            handleSubmit={handleSearchSubmit}
-          />
-          <Container className="mt-4">
-            {images.length ? (
-              <Row xs={1} md={2} lg={3}>
-                {images.map((image, i) => (
-                  <Col key={i} className="pb-3">
-                    <ImageCard
-                      image={image}
-                      deleteImage={handleDeleteSubmit}
-                      saveImage={handleSaveSubmit}
-                    />
-                  </Col>
-                ))}
-              </Row>
-            ) : (
-              <Welcome />
-            )}
-          </Container>
+          {loading ? (
+            <Spinner />
+          ) : (
+            <>
+              <Search
+                word={word}
+                setWord={setWord}
+                handleSubmit={handleSearchSubmit}
+              />
+              <Container className="mt-4">
+                {images.length ? (
+                  <Row xs={1} md={2} lg={3}>
+                    {images.map((image, i) => (
+                      <Col key={i} className="pb-3">
+                        <ImageCard
+                          image={image}
+                          deleteImage={handleDeleteSubmit}
+                          saveImage={handleSaveSubmit}
+                        />
+                      </Col>
+                    ))}
+                  </Row>
+                ) : (
+                  <Welcome />
+                )}
+              </Container>
+            </>
+          )}
         </>
       )}
       <ToastContainer position="bottom-right" />

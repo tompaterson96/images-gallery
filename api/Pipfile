@@ -15,6 +15,7 @@ parameterized = "*"
 aiohttp = "*"
 pytest-asyncio = "*"
 flask = {extras = ["async"], version = "*"}
+flask-jwt-extended = "*"
 
 [dev-packages]
 
