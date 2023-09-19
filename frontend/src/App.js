@@ -1,13 +1,12 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import axios from 'axios';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import Header from './components/Header';
 import Search from './components/Search';
 import ImageCard from './components/ImageCard';
 import Welcome from './components/Welcome';
-import Spinner from './components/Spinner';
 import useToken from './components/useToken';
-import Login from './components/Login';
+import LoginModal from './components/LoginModal';
 import { Container, Row, Col } from 'react-bootstrap';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -19,11 +18,12 @@ const App = () => {
 
   const [word, setWord] = useState('');
   const [images, setImages] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [showModal, setShowModal] = useState(false);
+
+  useEffect(() => console.log(showModal), [showModal]);
 
   const getSavedImages = async (access_token) => {
     try {
-      setLoading(true);
       console.log(token);
       const config = {
         headers: { Authorization: `Bearer ${access_token}` },
@@ -47,8 +47,6 @@ const App = () => {
     } catch (error) {
       console.log(error);
       toast.error(`Error occurred during stored images download: ${error}`);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -116,41 +114,40 @@ const App = () => {
 
   return (
     <div className="App">
-      <Header title="Images Gallery" token={token} removeToken={removeToken} />
-      {!token && token !== '' && token !== undefined ? (
-        <Login setToken={setToken} getSavedImages={getSavedImages} />
-      ) : (
-        <>
-          {loading ? (
-            <Spinner />
-          ) : (
-            <>
-              <Search
-                word={word}
-                setWord={setWord}
-                handleSubmit={handleSearchSubmit}
-              />
-              <Container className="mt-4">
-                {images.length ? (
-                  <Row xs={1} md={2} lg={3}>
-                    {images.map((image, i) => (
-                      <Col key={i} className="pb-3">
-                        <ImageCard
-                          image={image}
-                          deleteImage={handleDeleteSubmit}
-                          saveImage={handleSaveSubmit}
-                        />
-                      </Col>
-                    ))}
-                  </Row>
-                ) : (
-                  <Welcome />
-                )}
-              </Container>
-            </>
-          )}
-        </>
-      )}
+      <Header
+        title="Images Gallery"
+        setToken={setToken}
+        token={token}
+        removeToken={removeToken}
+        setShowModal={setShowModal}
+      />
+
+      <LoginModal
+        setToken={setToken}
+        getSavedImages={getSavedImages}
+        showModal={showModal}
+        setShowModal={setShowModal}
+      />
+
+      <Search word={word} setWord={setWord} handleSubmit={handleSearchSubmit} />
+
+      <Container className="mt-4">
+        {images.length ? (
+          <Row xs={1} md={2} lg={3}>
+            {images.map((image, i) => (
+              <Col key={i} className="pb-3">
+                <ImageCard
+                  image={image}
+                  deleteImage={handleDeleteSubmit}
+                  saveImage={handleSaveSubmit}
+                />
+              </Col>
+            ))}
+          </Row>
+        ) : (
+          <Welcome />
+        )}
+      </Container>
       <ToastContainer position="bottom-right" />
     </div>
   );

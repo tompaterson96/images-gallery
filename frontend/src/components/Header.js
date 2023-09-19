@@ -1,4 +1,4 @@
-import React from 'react';
+import { React } from 'react';
 import { Navbar, Container, Button } from 'react-bootstrap';
 import { ReactComponent as Logo } from '../images/logo.svg';
 import axios from 'axios';
@@ -8,7 +8,7 @@ const navbarStyle = {
   textColor: '#F08',
 };
 
-const Header = ({ title, token, removeToken }) => {
+const Header = ({ title, setToken, token, removeToken, setShowModal }) => {
   function logMeOut() {
     axios({
       method: 'POST',
@@ -27,22 +27,24 @@ const Header = ({ title, token, removeToken }) => {
   }
 
   return (
-    <Navbar style={navbarStyle}>
-      <Container>
-        <Logo alt={title} style={{ maxWidth: '12rem', maxHeight: '2rem' }} />
-        {!token && token !== '' && token !== undefined ? (
-          <>
-            <Button variant="secondary">Login</Button>
-          </>
-        ) : (
-          <>
-            <Button variant="secondary" onClick={logMeOut}>
-              Logout
-            </Button>
-          </>
-        )}
-      </Container>
-    </Navbar>
+    <>
+      <Navbar style={navbarStyle}>
+        <Container>
+          <Logo alt={title} style={{ maxWidth: '12rem', maxHeight: '2rem' }} />
+          {!token && token !== '' && token !== undefined ? (
+            <>
+              <Button onClick={() => setShowModal(true)}>Login</Button>
+            </>
+          ) : (
+            <>
+              <Button variant="secondary" onClick={logMeOut}>
+                Logout
+              </Button>
+            </>
+          )}
+        </Container>
+      </Navbar>
+    </>
   );
 };
 
