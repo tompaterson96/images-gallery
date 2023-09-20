@@ -134,7 +134,7 @@ const App = () => {
         getSavedImages={getSavedImages}
         showModal={showModal}
         setShowModal={setShowModal}
-        notifier={toast.info}
+        notifier={toast}
       />
 
       <Search word={word} setWord={setWord} handleSubmit={handleSearchSubmit} />

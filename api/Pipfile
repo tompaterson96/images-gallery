@@ -16,6 +16,7 @@ aiohttp = "*"
 pytest-asyncio = "*"
 flask = {extras = ["async"], version = "*"}
 flask-jwt-extended = "*"
+bcrypt = "*"
 
 [dev-packages]
 

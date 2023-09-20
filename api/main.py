@@ -13,10 +13,11 @@ from flask_jwt_extended import (
 )
 
 import unsplash_client
-from mongo_client import client as mongo_client
+from users_db import UserDatabase
+from images_db import ImageDatabase
 
-gallery = mongo_client.gallery
-images_collection = gallery.images
+users_db = UserDatabase()
+images_db = ImageDatabase()
 
 app = Flask(__name__)
 CORS(app)
@@ -30,10 +31,29 @@ jwt = JWTManager(app)
 def create_token():
     email = request.json.get("email", None)
     password = request.json.get("password", None)
-    if email != "tom.paterson@bjss.com" or password != "test":
-        return {"msg": "Wrong email or password"}, 401
 
-    access_token = create_access_token(identity=email)
+    user = users_db.login(email, password)
+    if "error" in user:
+        return user, 400
+
+    access_token = create_access_token(identity=user)
+    user = {"access_token": access_token}
+    return user
+
+
+@app.route("/register", methods=["POST"])
+def register():
+    email = request.json.get("email", None)
+    password = request.json.get("password", None)
+    name = request.json.get("name", None)
+    if not email or not password or not name:
+        return {"error": "All details must be provided"}, 404
+
+    user = users_db.register(email, password, name)
+    if "error" in user:
+        return user, 409
+
+    access_token = create_access_token(identity=user)
     response = {"access_token": access_token}
     return response
 
@@ -54,7 +74,7 @@ def refresh_expiring_jwts(response):
         if target_timestamp > exp_timestamp:
             access_token = create_access_token(identity=get_jwt_identity())
             data = response.get_json()
-            if type(data) is dict:
+            if isinstance(data, dict):
                 data["access_token"] = access_token
                 response.data = json.dumps(data)
         return response
@@ -76,21 +96,18 @@ async def new_image():
 def images():
     """Store and retrieve images from mongo"""
     if request.method == "GET":
-        image_data = images_collection.find({})
-        return jsonify([img for img in image_data])
+        return jsonify(images_db.get_all_images())
 
     if request.method == "POST":
         image = request.get_json()
-        image["_id"] = image.get("id")
-        result = images_collection.insert_one(image)
-        return {"inserted_id": result.inserted_id}
+        return images_db.save_image(image)
 
 
 @app.route("/images/<image_id>", methods=["DELETE"])
 @jwt_required()
 def image_by_id(image_id):
     """Delete image from mongo"""
-    result = images_collection.delete_one({"_id": image_id})
+    result = images_db.delete_image(image_id)
     if not result:
         return {"error": "Image was not deleted. Please try again"}, 500
     if result and not result.deleted_count:
