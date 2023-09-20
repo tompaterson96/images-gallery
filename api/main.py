@@ -95,23 +95,38 @@ async def new_image():
 @jwt_required()
 def images():
     """Store and retrieve images from mongo"""
+
+    current_user = get_jwt_identity()
+    user_id = current_user["_id"]
+    if not user_id:
+        return {"error": "Request not from authourised user"}, 401
+
     if request.method == "GET":
-        return jsonify(images_db.get_all_images())
+        return jsonify(images_db.get_all_images_for_user(user_id))
 
     if request.method == "POST":
         image = request.get_json()
-        return images_db.save_image(image)
+        return images_db.save_image_for_user(image, user_id)
 
 
 @app.route("/images/<image_id>", methods=["DELETE"])
 @jwt_required()
 def image_by_id(image_id):
     """Delete image from mongo"""
-    result = images_db.delete_image(image_id)
+
+    current_user = get_jwt_identity()
+    user_id = current_user["_id"]
+    if not user_id:
+        return {"error": "Request not from authourised user"}, 401
+
+    result = images_db.delete_image_for_user(image_id, user_id)
+
     if not result:
         return {"error": "Image was not deleted. Please try again"}, 500
-    if result and not result.deleted_count:
+
+    if result and not result["deleted_count"]:
         return {"error": f"Image with Id {image_id} not found"}, 404
+
     return {"deleted_id": image_id}
 
 

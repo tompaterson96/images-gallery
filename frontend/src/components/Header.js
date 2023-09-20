@@ -1,5 +1,5 @@
 import { React } from 'react';
-import { Navbar, Container, Button } from 'react-bootstrap';
+import { Navbar, Container, Button, Dropdown } from 'react-bootstrap';
 import { ReactComponent as Logo } from '../images/logo.svg';
 import axios from 'axios';
 
@@ -10,7 +10,7 @@ const navbarStyle = {
 
 const Header = ({
   title,
-  token,
+  currentUser,
   removeToken,
   setShowModal,
   notifier,
@@ -34,8 +34,6 @@ const Header = ({
       .catch((error) => {
         if (error.response) {
           console.log(error.response);
-          console.log(error.response.status);
-          console.log(error.response.headers);
         }
       });
   }
@@ -45,15 +43,21 @@ const Header = ({
       <Navbar style={navbarStyle}>
         <Container>
           <Logo alt={title} style={{ maxWidth: '12rem', maxHeight: '2rem' }} />
-          {!token && token !== '' && token !== undefined ? (
+          {currentUser ? (
             <>
-              <Button onClick={() => setShowModal(true)}>Login</Button>
+              <Dropdown>
+                <Dropdown.Toggle variant="primary" id="dropdown-basic">
+                  {currentUser['name']}
+                </Dropdown.Toggle>
+
+                <Dropdown.Menu>
+                  <Dropdown.Item onClick={logMeOut}>Logout</Dropdown.Item>
+                </Dropdown.Menu>
+              </Dropdown>
             </>
           ) : (
             <>
-              <Button variant="secondary" onClick={logMeOut}>
-                Logout
-              </Button>
+              <Button onClick={() => setShowModal(true)}>Login</Button>
             </>
           )}
         </Container>

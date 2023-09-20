@@ -26,10 +26,7 @@ class UserDatabase:
         user = self._users_collection.find_one({"email": email})
         if not user:
             return {"error": "No user registered with email provided"}
-        print(password)
-        print(user)
         pwd_bytes = password.encode("utf-8")
-        print(pwd_bytes)
         if not bcrypt.checkpw(pwd_bytes, user["password"]):
             return {"error": "Incorrect email or password"}
         del user["password"]

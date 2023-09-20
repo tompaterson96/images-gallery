@@ -19,9 +19,21 @@ const App = () => {
   const [word, setWord] = useState('');
   const [images, setImages] = useState([]);
   const [showModal, setShowModal] = useState(false);
+  const [currentUser, setCurrentUser] = useState({});
+
+  function getCurrentUser() {
+    if (!token) {
+      return null;
+    }
+    const base64Url = token.split('.')[1];
+    const base64 = base64Url.replace('-', '+').replace('_', '/');
+    const jwt = JSON.parse(window.atob(base64));
+    return jwt['sub'];
+  }
+
+  useEffect(() => setCurrentUser(getCurrentUser()), [token]);
 
   const getSavedImages = async (access_token) => {
-    console.log(access_token);
     if (access_token) {
       const config = {
         headers: { Authorization: `Bearer ${access_token}` },
@@ -29,7 +41,6 @@ const App = () => {
 
       try {
         const res = await axios.get(`${API_URL}/images`, config);
-        console.log(res.data);
         res.access_token && setToken(res.access_token);
 
         const all_images = [...res.data, ...images];
@@ -81,7 +92,6 @@ const App = () => {
           headers: { Authorization: `Bearer ${token}` },
         };
         const res = await axios.delete(`${API_URL}/images/${id}`, config);
-        console.log(res.data);
         if (res.data?.deleted_id) {
           setImages(images.filter((image) => image.id !== id));
           toast.warn(`Image ${imageToBeDeleted.title.toUpperCase()} deleted`);
@@ -102,7 +112,6 @@ const App = () => {
         headers: { Authorization: `Bearer ${token}` },
       };
       const res = await axios.post(`${API_URL}/images`, imageToBeSaved, config);
-      console.log(res.data);
       if (res.data?.inserted_id) {
         setImages(
           images.map((image) =>
@@ -121,7 +130,7 @@ const App = () => {
     <div className="App">
       <Header
         title="Images Gallery"
-        token={token}
+        currentUser={currentUser}
         removeToken={removeToken}
         setShowModal={setShowModal}
         notifier={toast.info}
