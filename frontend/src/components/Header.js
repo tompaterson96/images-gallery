@@ -8,7 +8,15 @@ const navbarStyle = {
   textColor: '#F08',
 };
 
-const Header = ({ title, setToken, token, removeToken, setShowModal }) => {
+const Header = ({
+  title,
+  token,
+  removeToken,
+  setShowModal,
+  notifier,
+  images,
+  setImages,
+}) => {
   function logMeOut() {
     axios({
       method: 'POST',
@@ -16,6 +24,12 @@ const Header = ({ title, setToken, token, removeToken, setShowModal }) => {
     })
       .then((_) => {
         removeToken();
+        notifier('Logged out');
+        setImages(
+          images.map((image) =>
+            image.saved ? { ...image, saved: false } : image,
+          ),
+        );
       })
       .catch((error) => {
         if (error.response) {

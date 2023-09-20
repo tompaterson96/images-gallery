@@ -2,7 +2,13 @@ import { useState } from 'react';
 import { Container, Row, Form, Button, Modal } from 'react-bootstrap';
 import axios from 'axios';
 
-const LoginModal = ({ setToken, getSavedImages, showModal, setShowModal }) => {
+const LoginModal = ({
+  setToken,
+  getSavedImages,
+  showModal,
+  setShowModal,
+  notifier,
+}) => {
   const [loginForm, setloginForm] = useState({
     email: '',
     password: '',
@@ -19,8 +25,9 @@ const LoginModal = ({ setToken, getSavedImages, showModal, setShowModal }) => {
     })
       .then((response) => {
         setToken(response.data.access_token);
-        getSavedImages(response.data.access_token);
         setShowModal(false);
+        notifier('Logged in');
+        getSavedImages(response.data.access_token);
       })
       .catch((error) => {
         if (error.response) {

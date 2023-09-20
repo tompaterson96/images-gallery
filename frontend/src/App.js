@@ -20,35 +20,40 @@ const App = () => {
   const [images, setImages] = useState([]);
   const [showModal, setShowModal] = useState(false);
 
-  useEffect(() => console.log(showModal), [showModal]);
-
   const getSavedImages = async (access_token) => {
-    try {
-      console.log(token);
+    console.log(access_token);
+    if (access_token) {
       const config = {
         headers: { Authorization: `Bearer ${access_token}` },
       };
-      const res = await axios.get(`${API_URL}/images`, config);
-      console.log(res.data);
-      res.access_token && setToken(res.access_token);
 
-      const all_images = [...res.data, ...images];
-      const all_ids = all_images.map((item) => item.id);
-      const unique_ids = all_ids.filter(
-        (id, index) => all_ids.indexOf(id) === index,
-      );
-      const unique_images = [];
-      unique_ids.forEach((id) =>
-        unique_images.push(all_images.find((image) => image.id === id)),
-      );
-      setImages(unique_images);
+      try {
+        const res = await axios.get(`${API_URL}/images`, config);
+        console.log(res.data);
+        res.access_token && setToken(res.access_token);
 
-      toast.success('Downloaded stored images');
-    } catch (error) {
-      console.log(error);
-      toast.error(`Error occurred during stored images download: ${error}`);
+        const all_images = [...res.data, ...images];
+        const all_ids = all_images.map((item) => item.id);
+        const unique_ids = all_ids.filter(
+          (id, index) => all_ids.indexOf(id) === index,
+        );
+        const unique_images = [];
+        unique_ids.forEach((id) =>
+          unique_images.push(all_images.find((image) => image.id === id)),
+        );
+        setImages(unique_images);
+
+        toast.success('Downloaded stored images');
+      } catch (error) {
+        console.log(error);
+        toast.error(`Error occurred during stored images download: ${error}`);
+      }
     }
   };
+
+  useEffect(() => {
+    getSavedImages(token);
+  }, []);
 
   const handleSearchSubmit = async (ev) => {
     ev.preventDefault();
@@ -116,10 +121,12 @@ const App = () => {
     <div className="App">
       <Header
         title="Images Gallery"
-        setToken={setToken}
         token={token}
         removeToken={removeToken}
         setShowModal={setShowModal}
+        notifier={toast.info}
+        images={images}
+        setImages={setImages}
       />
 
       <LoginModal
@@ -127,6 +134,7 @@ const App = () => {
         getSavedImages={getSavedImages}
         showModal={showModal}
         setShowModal={setShowModal}
+        notifier={toast.info}
       />
 
       <Search word={word} setWord={setWord} handleSubmit={handleSearchSubmit} />
@@ -140,6 +148,7 @@ const App = () => {
                   image={image}
                   deleteImage={handleDeleteSubmit}
                   saveImage={handleSaveSubmit}
+                  token={token}
                 />
               </Col>
             ))}

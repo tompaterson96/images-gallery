@@ -1,7 +1,7 @@
 import React from 'react';
 import { Card, Button, Nav } from 'react-bootstrap';
 
-const ImageCard = ({ image, deleteImage, saveImage }) => {
+const ImageCard = ({ image, deleteImage, saveImage, token }) => {
   return (
     <Card style={{ width: '18rem' }}>
       <Card.Img variant="top" src={image?.urls?.small} />
@@ -16,7 +16,7 @@ const ImageCard = ({ image, deleteImage, saveImage }) => {
         >
           Delete
         </Button>{' '}
-        {!image.saved && (
+        {!image.saved && token && (
           <Button
             variant="secondary"
             onClick={() => {
