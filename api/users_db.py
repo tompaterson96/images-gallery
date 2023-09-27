@@ -1,11 +1,11 @@
 import uuid
 import bcrypt
-from mongo_client import client as mongo_client
+from mongo_client import client
 
 
 class UserDatabase:
     def __init__(self):
-        gallery = mongo_client.gallery
+        gallery = client.gallery
         self._users_collection = gallery.users
 
     def register(self, email, password, name):
@@ -31,6 +31,12 @@ class UserDatabase:
             return {"error": "Incorrect email or password"}
         del user["password"]
         return user
+
+    def deregister(self, user_id):
+        if not self._users_collection.find_one({"_id": user_id}):
+            return {"error": "User not registered"}
+        result = self._users_collection.delete_one({"_id": user_id})
+        return {"deleted_count": result.deleted_count}
 
     def _hash_password(self, password):
         pwd_bytes = password.encode("utf-8")

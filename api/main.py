@@ -65,6 +65,23 @@ def logout():
     return response
 
 
+@app.route("/delete-account", methods=["DELETE"])
+@jwt_required()
+def delete_account():
+    """Delete user from mongo"""
+
+    current_user = get_jwt_identity()
+    user_id = current_user["_id"]
+    if not user_id:
+        return {"error": "Request not from authourised user"}, 401
+
+    user_result = users_db.deregister(user_id)
+    images_result = images_db.delete_all_images_for_user(user_id)
+
+    response = {"user": user_result, "images": images_result}
+    return response
+
+
 @app.after_request
 def refresh_expiring_jwts(response):
     try:

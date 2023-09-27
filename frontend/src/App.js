@@ -131,9 +131,10 @@ const App = () => {
       <Header
         title="Images Gallery"
         currentUser={currentUser}
+        token={token}
         removeToken={removeToken}
         setShowModal={setShowModal}
-        notifier={toast.info}
+        notifier={toast}
         images={images}
         setImages={setImages}
       />

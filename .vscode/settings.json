@@ -26,4 +26,5 @@
     "python.testing.pytestArgs": [
         "./unit_tests"
     ],
+    "python.analysis.typeCheckingMode": "basic",
 }

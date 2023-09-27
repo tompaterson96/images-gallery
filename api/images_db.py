@@ -1,9 +1,9 @@
-from mongo_client import client as mongo_client
+from mongo_client import client
 
 
 class ImageDatabase:
     def __init__(self):
-        gallery = mongo_client.gallery
+        gallery = client.gallery
         self._images_collection = gallery.images
 
     def get_all_images_for_user(self, user_id):
@@ -29,7 +29,7 @@ class ImageDatabase:
     def delete_image_for_user(self, image_id, user_id):
         image_data = self._images_collection.find_one({"_id": image_id})
 
-        if image_data:
+        if len(image_data["saved_by_users"]) > 1:
             result = self._images_collection.update_one(
                 {"_id": image_id}, {"$pull": {"saved_by_users": user_id}}
             )
@@ -37,3 +37,18 @@ class ImageDatabase:
         else:
             result = self._images_collection.delete_one({"_id": image_id})
             return {"deleted_count": result.deleted_count}
+
+    def delete_all_images_for_user(self, user_id):
+        response = {"deleted_count": 0}
+        images_data = self._images_collection.find({"saved_by_users": user_id})
+        for image in images_data:
+            if len(image["saved_by_users"]) > 1:
+                result = self._images_collection.update_one(
+                    {"_id": image["_id"]}, {"$pull": {"saved_by_users": user_id}}
+                )
+                response["deleted_count"] += result.modified_count
+            else:
+                result = self._images_collection.delete_one({"_id": image["_id"]})
+                response["deleted_count"] += result.deleted_count
+
+        return response

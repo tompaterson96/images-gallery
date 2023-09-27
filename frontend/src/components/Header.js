@@ -11,25 +11,43 @@ const navbarStyle = {
 const Header = ({
   title,
   currentUser,
+  token,
   removeToken,
   setShowModal,
   notifier,
   images,
   setImages,
 }) => {
-  function logMeOut() {
+  function logOut() {
     axios({
       method: 'POST',
       url: 'http://localhost:5000/logout',
     })
       .then((_) => {
         removeToken();
-        notifier('Logged out');
+        notifier.info('Logged out');
         setImages(
           images.map((image) =>
             image.saved ? { ...image, saved: false } : image,
           ),
         );
+      })
+      .catch((error) => {
+        if (error.response) {
+          console.log(error.response);
+        }
+      });
+  }
+  function deleteAccount() {
+    axios({
+      method: 'DELETE',
+      url: 'http://localhost:5000/delete-account',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+      .then((_) => {
+        notifier.success('Account deleted');
       })
       .catch((error) => {
         if (error.response) {
@@ -51,7 +69,16 @@ const Header = ({
                 </Dropdown.Toggle>
 
                 <Dropdown.Menu>
-                  <Dropdown.Item onClick={logMeOut}>Logout</Dropdown.Item>
+                  <Dropdown.Item onClick={logOut}>Logout</Dropdown.Item>
+                  <Dropdown.Item
+                    onClick={() => {
+                      const access_token = token;
+                      logOut();
+                      deleteAccount(access_token);
+                    }}
+                  >
+                    Delete Account
+                  </Dropdown.Item>
                 </Dropdown.Menu>
               </Dropdown>
             </>
