@@ -47,7 +47,7 @@ def register():
     password = request.json.get("password", None)
     name = request.json.get("name", None)
     if not email or not password or not name:
-        return {"error": "All details must be provided"}, 404
+        return {"error": "All details must be provided"}, 400
 
     user = users_db.register(email, password, name)
     if "error" in user:

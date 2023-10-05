@@ -15,19 +15,26 @@ class ImageDatabase:
         image_data = self._images_collection.find_one({"_id": image_id})
 
         if image_data:
+            if user_id in image_data["saved_by_users"]:
+                return {"inserted_id": image_id}
+
             result = self._images_collection.update_one(
                 {"_id": image_id}, {"$push": {"saved_by_users": user_id}}
             )
-            return {"inserted_id": result.modified_count}
+            return {"inserted_id": (image_id if result.modified_count else "")}
         else:
             image["_id"] = image.get("id")
             image["saved_by_users"] = [user_id]
-            print(image)
             result = self._images_collection.insert_one(image)
             return {"inserted_id": result.inserted_id}
 
     def delete_image_for_user(self, image_id, user_id):
-        image_data = self._images_collection.find_one({"_id": image_id})
+        image_data = self._images_collection.find_one(
+            {"_id": image_id, "saved_by_users": user_id}
+        )
+
+        if not image_data:
+            return {"deleted_count": 0}
 
         if len(image_data["saved_by_users"]) > 1:
             result = self._images_collection.update_one(
@@ -41,6 +48,7 @@ class ImageDatabase:
     def delete_all_images_for_user(self, user_id):
         response = {"deleted_count": 0}
         images_data = self._images_collection.find({"saved_by_users": user_id})
+
         for image in images_data:
             if len(image["saved_by_users"]) > 1:
                 result = self._images_collection.update_one(

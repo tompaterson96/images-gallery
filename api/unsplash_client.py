@@ -21,7 +21,7 @@ if not UNSPLASH_KEY:
 
 async def get_new_image(word):
     async with aiohttp.ClientSession() as session:
-        async with session.get(
+        response = await session.get(
             UNSPLASH_URL,
             headers={
                 "Accept-Version": "v1",
@@ -29,6 +29,6 @@ async def get_new_image(word):
             },
             params={"query": word},
             timeout=10,
-        ) as response:
-            json = await response.json()
-            return json
+        )
+        json = await response.json()
+        return json

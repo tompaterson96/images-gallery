@@ -26,8 +26,7 @@ class UserDatabase:
         user = self._users_collection.find_one({"email": email})
         if not user:
             return {"error": "No user registered with email provided"}
-        pwd_bytes = password.encode("utf-8")
-        if not bcrypt.checkpw(pwd_bytes, user["password"]):
+        if not self._passwords_match(password, user["password"]):
             return {"error": "Incorrect email or password"}
         del user["password"]
         return user
@@ -38,7 +37,13 @@ class UserDatabase:
         result = self._users_collection.delete_one({"_id": user_id})
         return {"deleted_count": result.deleted_count}
 
-    def _hash_password(self, password):
+    @staticmethod
+    def _hash_password(password):
         pwd_bytes = password.encode("utf-8")
         salt = bcrypt.gensalt()
         return bcrypt.hashpw(pwd_bytes, salt)
+
+    @staticmethod
+    def _passwords_match(password, hashed_password):
+        pwd_bytes = password.encode("utf-8")
+        return bcrypt.checkpw(pwd_bytes, hashed_password)

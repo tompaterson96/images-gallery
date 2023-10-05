@@ -24,7 +24,7 @@
     "python.testing.cwd": "./api",
     "python.testing.pytestEnabled": true,
     "python.testing.pytestArgs": [
-        "./unit_tests"
+        "./tests"
     ],
-    "python.analysis.typeCheckingMode": "basic",
+    "python.analysis.typeCheckingMode": "off",
 }

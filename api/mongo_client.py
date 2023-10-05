@@ -1,5 +1,5 @@
 import os
-from pymongo import MongoClient
+import pymongo
 from dotenv import load_dotenv
 
 load_dotenv(dotenv_path="./api/.env.local")
@@ -9,7 +9,7 @@ MONGO_PORT = os.environ.get("MONGO_PORT", 27017)
 MONGO_USERNAME = os.environ.get("MONGO_USERNAME", "root")
 MONGO_PASSWORD = os.environ.get("MONGO_PASSWORD", "")
 
-client = MongoClient(
+client = pymongo.MongoClient(
     host=MONGO_URL,
     port=MONGO_PORT,
     username=MONGO_USERNAME,

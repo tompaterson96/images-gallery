@@ -1,5 +1,7 @@
 import pytest
 import main
+import images_db
+import mongomock
 
 
 @pytest.fixture
